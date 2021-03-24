@@ -36,16 +36,14 @@ void *send_message(void *socket)
     char f_message[1024];
     while (1)
     {
-        // f_message[0]='\0';
         memset(f_message, 0, 1024);
         scanf("%s", message);
         if (!strcmp(message, DISCONNECT_MESSAGE))
         {
             exit(0);
         }
-        strcat(f_message, "[Server]");
+        strcat(f_message, "[Server]: ");
         strcat(f_message, message);
-        printf("%s\n", f_message);
         send(new_socket, f_message, strlen(f_message), 0);
     }
 }
@@ -59,15 +57,16 @@ void *rec_message(void *socket)
     {
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
-        if (valread==0){
-            printf("\t{Client DISCONNECTED}");
+        if (valread == 0)
+        {
+            printf("\t-------------{{Client DISCONNECTED}}-------------");
             exit(0);
         }
         if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
             return (0);
         }
-        printf("%s\n", buffer);
+        printf("\t\t\t%s\n", buffer);
     }
 }
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
@@ -103,7 +102,7 @@ int main()
         printf("[%d] %s", i + 1, IPs[i]);
         n = i;
     }
-    printf("\nEnter [1-%d]:", n + 1);
+    printf("Enter [1-%d]:", n + 1);
     scanf("%d", &n);
     for (int i = 0; IPs[n - 1][i] != '\n'; i++)
     {
@@ -139,7 +138,7 @@ int main()
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    printf("\t{Server hosted on %s}\n",IP);
+    printf("\n\t-------------{{Server hosted on \"%s\"}}-------------\n\n", IP);
     accept_conn(server_fd, address, addrlen);
     return 0;
 }

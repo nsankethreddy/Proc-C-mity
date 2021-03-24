@@ -23,9 +23,8 @@ void *send_message(void *socket)
         {
             exit(0);
         }
-        strcat(f_message, "[Client]");
+        strcat(f_message, "[Client]: ");
         strcat(f_message, message);
-        printf("%s\n", f_message);
         send(new_socket, f_message, strlen(f_message), 0);
     }
 }
@@ -39,15 +38,16 @@ void *rec_message(void *socket)
     {
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
-        if (valread==0){
-            printf("\t{Servere DISCONNECTED}\n");
+        if (valread == 0)
+        {
+            printf("\n\t-------------{{Servere DISCONNECTED}}-------------\n\n");
             exit(0);
         }
         if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
             return (0);
         }
-        printf("%s\n", buffer);
+        printf("\t\t\t%s\n", buffer);
     }
 }
 
@@ -76,7 +76,7 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    printf("\t{CONNECTED to Server}\n");
+    printf("\n\t-------------{{CONNECTED to Server}}-------------\n\n");
     pthread_t recieve_thread;
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;
