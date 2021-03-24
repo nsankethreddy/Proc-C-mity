@@ -13,10 +13,12 @@
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
-    char message[1024] = "hi";
+    char message[1024];
     char f_message[1024];
     while (1)
     {
+        // f_message[0] = '\0';
+        memset(f_message, 0, 1024);
         scanf("%s", message);
         if (!strcmp(message, DISCONNECT_MESSAGE))
         {
@@ -36,6 +38,7 @@ void *rec_message(void *socket)
 
     while (1)
     {
+        memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
