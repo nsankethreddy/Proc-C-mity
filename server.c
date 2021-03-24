@@ -32,7 +32,7 @@ char **get_system_IPs()
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
-    char message[1024] = "hi";
+    char message[1024];
     char f_message[1024];
     while (1)
     {
@@ -106,7 +106,6 @@ int main()
     IP[length] = '\0';
 
     // sockets
-    char *text = "Hello from server";
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
