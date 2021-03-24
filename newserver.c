@@ -5,9 +5,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #define PORT 5000
-#define NUMBER_OF_CLIENTS 3
+#define DISCONNECT_MESSAGE "quit"
 
 char **get_system_IPs()
 {
@@ -28,9 +29,57 @@ char **get_system_IPs()
     return IPs;
 }
 
+void *send_message(void *socket)
+{
+    int new_socket = (intptr_t)socket;
+    char message[1024] = "hi";
+    char f_message[1024];
+    while (1)
+    {
+        scanf("%s", message);
+        if (!strcmp(message, DISCONNECT_MESSAGE))
+        {
+            exit(0);
+        }
+        strcat(f_message, "[Server]");
+        strcat(f_message, message);
+        printf("%s\n", f_message);
+        send(new_socket, f_message, strlen(f_message), 0);
+    }
+}
+void *rec_message(void *socket)
+{
+    int new_socket = (intptr_t)socket;
+    char buffer[1024] = {0};
+    int valread;
+
+    while (1)
+    {
+        valread = read(new_socket, buffer, 1024);
+        if (!strcmp(buffer, DISCONNECT_MESSAGE))
+        {
+            return (0);
+        }
+        printf("%s\n", buffer);
+    }
+}
+void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
+{
+    int new_socket;
+    char buffer[1024] = {0};
+    while (1)
+    {
+        new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+        pthread_t recieve_thread;
+        pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)new_socket);
+        pthread_t send_thread;
+        pthread_create(&send_thread, NULL, send_message, (void *)(intptr_t)new_socket);
+    }
+}
+
 int main()
 {
-    int n, new_socket, server_fd, valread;
+    int n, server_fd, valread;
     int opt = 1;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
@@ -57,7 +106,7 @@ int main()
     IP[length] = '\0';
 
     // sockets
-    char *hello = "Hello from server";
+    char *text = "Hello from server";
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -79,20 +128,12 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    if (listen(server_fd, NUMBER_OF_CLIENTS) < 0)
+    if (listen(server_fd, 3) < 0)
     {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
-    {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-    valread = read(new_socket, buffer, 1024);
-    printf("%s\n", buffer);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
-
+    printf("Server Created successfully!\n");
+    accept_conn(server_fd, address, addrlen);
     return 0;
 }

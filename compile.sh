@@ -1,2 +1,2 @@
-gcc newserver.c -o server
-gcc newclient.c -o client
+gcc newserver.c -o server -lpthread
+gcc newclient.c -o client -lpthread
