@@ -9,6 +9,7 @@
 int main(int argc, char const *argv[])
 {
     char pass[20];
+    strncpy(pass,argv[1],20);
     int sock = 0, valread;
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
@@ -18,11 +19,8 @@ int main(int argc, char const *argv[])
         printf("\n Socket creation error \n");
         return -1;
     }
-
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
-    printf("Enter Server's IP:");
-    scanf("%s", pass);
     if (inet_pton(AF_INET, pass, &serv_addr.sin_addr) <= 0)
     {
         printf("\nInvalid address/ Address not supported \n");
