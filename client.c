@@ -17,7 +17,6 @@ void *send_message(void *socket)
     char f_message[1024];
     while (1)
     {
-        // f_message[0] = '\0';
         memset(f_message, 0, 1024);
         scanf("%s", message);
         if (!strcmp(message, DISCONNECT_MESSAGE))
@@ -40,6 +39,10 @@ void *rec_message(void *socket)
     {
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
+        if (valread==0){
+            printf("\t{Servere DISCONNECTED}\n");
+            exit(0);
+        }
         if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
             return (0);
@@ -73,7 +76,7 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-
+    printf("\t{CONNECTED to Server}\n");
     pthread_t recieve_thread;
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;

@@ -59,6 +59,10 @@ void *rec_message(void *socket)
     {
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
+        if (valread==0){
+            printf("\t{Client DISCONNECTED}");
+            exit(0);
+        }
         if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
             return (0);
@@ -135,7 +139,7 @@ int main()
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    printf("Server Created successfully!\n");
+    printf("\t{Server hosted on %s}\n",IP);
     accept_conn(server_fd, address, addrlen);
     return 0;
 }
