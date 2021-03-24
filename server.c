@@ -5,12 +5,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#define MAX_CLIENTS 4;
-char *message = "CONNECTED TO SERVER\n";
+#define MAX_CLIENTS 4
 int main()
 {
 	int opt = 1;
-	int master_socket, addrlen, new_socket, client_socket[4],max_clients = 4, activity, i, valread, sd;
+	int master_socket, addrlen, new_socket, client_socket[MAX_CLIENTS],max_clients = MAX_CLIENTS, activity, i, valread, sd;
 	int max_sd;
 	int server_len, client_len;
 	struct sockaddr_un server_address, address;
