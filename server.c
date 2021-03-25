@@ -9,7 +9,7 @@
 #include<ctype.h>
 
 #define PORT 5000
-#define DISCONNECT_MESSAGE "quit"
+#define DISCONNECT_MESSAGE "quit\n"
 
 int list[100];
 char* names[100][1024];
@@ -76,7 +76,7 @@ void *send_message(void *socket)
         memset(f_message, 0, 1024);
         memset(message, 0, 1024);
         fgets(message, 1024, stdin);
-        if (!strcmp(message, DISCONNECT_MESSAGE))
+        if (strcmp(message, DISCONNECT_MESSAGE)==0)
         {
             exit(0);
         }
@@ -102,28 +102,36 @@ void *rec_message(void *socket)
     while (1)
     {
         memset(buffer, 0, 1024);
-        valread = read(new_socket, buffer, 1024);
+        valread = read(new_socket, buffer, 1024);       
+        
+        /*if (!strcmp(buffer, DISCONNECT_MESSAGE))
+        {
+            printf("idhar");
+        }*/
         if (valread == 0)
         {
-            printf("\t-------------{{Client DISCONNECTED}}-------------");
-            exit(0);
+            
+            printf("\t-------------{{Client DISCONNECTED}}-------------\n");
+            close(new_socket);
+            break;
+            
         }
-        if (!strcmp(buffer, DISCONNECT_MESSAGE))
-        {
-            return (0);
-        }
-
-        broadcast(new_socket, buffer, 0);
+        
         int n = sizeof(list)/sizeof(int);
-      
+        char buffer1[1024] = {0};
         for(int i=0;i<n;i++)
         {
             if(list[i]==new_socket)
             {
-              printf("\t\t[%s]:",names[i]);
+              strcat(buffer1,names[i]);
+              strcat(buffer1,":\t");
+              strcat(buffer1,buffer);
             }
         }
-        printf("\t\t\t%s\n", buffer);
+
+        broadcast(new_socket, buffer1, 0);
+        
+        printf("\t\t\t%s\n", buffer1);
     }
 }
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
@@ -142,7 +150,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-        int conflict = 0;
+        
          for(int i = 0;i<100;i++)
         {
             if(!strcmp(buffer,names[i]))
@@ -161,7 +169,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
                 }*/
                 char g[4];
                 strcat(buffer,gen(g,4));
-                conflict = 1;
+                
                 //send message to client
                 char s[] = "your username has been changed to ";
                 strcat(s,buffer);
