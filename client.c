@@ -16,14 +16,27 @@ void *send_message(void *socket)
     int new_socket = (intptr_t)socket;
     char message[1024];
     char f_message[1024];
+
     while (1)
     {
+        int length = 0;
         memset(f_message, 0, 1024);
-        scanf("%s", message);
+        memset(message, 0, 1024);
+        // scanf("%s", message);
+        fgets(message, 1024, stdin);
         if (!strcmp(message, DISCONNECT_MESSAGE))
         {
             exit(0);
         }
+        if (!strcmp(message, "\n"))
+        {
+            continue;
+        }
+        for (int i = 0; message[i] != '\n'; i++)
+        {
+            ++length;
+        }
+        message[length] = '\0';
         strcat(f_message, "[");
         strcat(f_message, name);
         strcat(f_message, "]");

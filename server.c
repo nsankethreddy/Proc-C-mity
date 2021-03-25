@@ -59,12 +59,23 @@ void *send_message(void *socket)
     char f_message[1024];
     while (1)
     {
+        int length = 0;
         memset(f_message, 0, 1024);
-        scanf("%s", message);
+        memset(message, 0, 1024);
+        fgets(message, 1024, stdin);
         if (!strcmp(message, DISCONNECT_MESSAGE))
         {
             exit(0);
         }
+        if (!strcmp(message, "\n"))
+        {
+            continue;
+        }
+        for (int i = 0; message[i] != '\n'; i++)
+        {
+            ++length;
+        }
+        message[length] = '\0';
         strcat(f_message, "[Server]: ");
         strcat(f_message, message);
         broadcast(new_socket, f_message, 1);
@@ -109,9 +120,9 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-        strcat(buffer1,"\t{{");
-        strcat(buffer1,buffer);
-        strcat(buffer1," Joined the Chat}}");
+        strcat(buffer1, "\t{{");
+        strcat(buffer1, buffer);
+        strcat(buffer1, " Joined the Chat}}");
         broadcast(new_socket, buffer1, 0);
         printf("\t\t\t%s\n", buffer1);
         pthread_t recieve_thread;
