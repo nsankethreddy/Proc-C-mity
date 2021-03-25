@@ -122,10 +122,13 @@ void *rec_message(void *socket)
         for(int i=0;i<n;i++)
         {
             if(list[i]==new_socket)
-            {
+            { 
+              strcat(buffer1,"[");
               strcat(buffer1,names[i]);
+              strcat(buffer1,"]");
               strcat(buffer1,":\t");
               strcat(buffer1,buffer);
+              
             }
         }
 
