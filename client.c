@@ -54,10 +54,12 @@ void *rec_message(void *socket)
 int main(int argc, char const *argv[])
 {
     char pass[20];
+    // char name[20];
     strncpy(pass, argv[1], 20);
     int sock = 0, valread;
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
+    // printf("Enter your username: ");
+    // scanf("%s",name);
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");

@@ -10,6 +10,8 @@
 #define PORT 5000
 #define DISCONNECT_MESSAGE "quit"
 
+int list[100];
+
 char **get_system_IPs()
 {
     FILE *fp, *outputfile;
@@ -29,6 +31,27 @@ char **get_system_IPs()
     return IPs;
 }
 
+void *broadcast(int new_socket, char *f_message, int server)
+{
+    if (server)
+    {
+        for (int i = 0; list[i] != '\0'; i++)
+        {
+            send(list[i], f_message, strlen(f_message), 0);
+        }
+    }
+    else
+    {
+        for (int i = 0; list[i] != '\0'; i++)
+        {
+            if (list[i] != new_socket)
+            {
+                send(list[i], f_message, strlen(f_message), 0);
+            }
+        }
+    }
+}
+
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -44,7 +67,7 @@ void *send_message(void *socket)
         }
         strcat(f_message, "[Server]: ");
         strcat(f_message, message);
-        send(new_socket, f_message, strlen(f_message), 0);
+        broadcast(new_socket, f_message, 1);
     }
 }
 void *rec_message(void *socket)
@@ -52,7 +75,6 @@ void *rec_message(void *socket)
     int new_socket = (intptr_t)socket;
     char buffer[1024] = {0};
     int valread;
-
     while (1)
     {
         memset(buffer, 0, 1024);
@@ -66,6 +88,8 @@ void *rec_message(void *socket)
         {
             return (0);
         }
+
+        broadcast(new_socket, buffer, 0);
         printf("\t\t\t%s\n", buffer);
     }
 }
@@ -73,9 +97,15 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 {
     int new_socket;
     char buffer[1024] = {0};
+    int i;
     while (1)
     {
         new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+        for (i = 0; list[i] != '\0'; i++)
+        {
+        }
+        list[i] = new_socket;
+        // printf("New connection on new_socket: %d\n", new_socket);
         pthread_t recieve_thread;
         pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)new_socket);
         pthread_t send_thread;
