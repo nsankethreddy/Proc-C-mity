@@ -6,12 +6,24 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include<ctype.h>
 
 #define PORT 5000
-#define DISCONNECT_MESSAGE "quit\n"
+#define DISCONNECT_MESSAGE "quit"
 
 int list[100];
 char* names[100][1024];
+
+char* gen(char *s, const int len) {
+    static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
+    return s;
+}
 
 char **get_system_IPs()
 {
@@ -130,8 +142,38 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
+        int conflict = 0;
+         for(int i = 0;i<100;i++)
+        {
+            if(!strcmp(buffer,names[i]))
+            {
+                /*if(isdigit(buffer[sizeof(buffer)-2]))
+                {
+                    int k = (buffer[sizeof(buffer)-2]) + '0';
+                    k++;
+                    char app = k - '0';
+                    strcat(buffer,k);
+        
+                }
+                else
+                {
+                   strcat(buffer,"1");
+                }*/
+                char g[4];
+                strcat(buffer,gen(g,4));
+                conflict = 1;
+                //send message to client
+                char s[] = "your username has been changed to ";
+                strcat(s,buffer);
+                send(new_socket,s,1024, 0);
+               
+            }
+        }
+        /*if(conflict == 0)
+        {
+            send(list[i],"no",2,0);
+        }*/
         strcpy(names[i],buffer);
-        //printf("%s",names[i]);
         strcat(buffer1, "\t{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");

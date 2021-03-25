@@ -97,6 +97,13 @@ int main(int argc, char const *argv[])
     }
     printf("\n\t-------------{{CONNECTED to Server}}-------------\n\n");
     send(sock, name, strlen(name), 0);
+    char recv[1024];
+    read(sock, recv, sizeof(recv));
+    if(strcmp(recv,"no"))
+    {
+       printf("%s\n",recv);
+    }
+    
     pthread_t recieve_thread;
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;
