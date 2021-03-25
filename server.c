@@ -11,6 +11,7 @@
 #define DISCONNECT_MESSAGE "quit"
 
 int list[100];
+char* names[100][1024];
 
 char **get_system_IPs()
 {
@@ -101,6 +102,15 @@ void *rec_message(void *socket)
         }
 
         broadcast(new_socket, buffer, 0);
+        int n = sizeof(list)/sizeof(int);
+      
+        for(int i=0;i<n;i++)
+        {
+            if(list[i]==new_socket)
+            {
+              printf("\t\t[%s]:",names[i]);
+            }
+        }
         printf("\t\t\t%s\n", buffer);
     }
 }
@@ -120,6 +130,8 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
+        strcpy(names[i],buffer);
+        //printf("%s",names[i]);
         strcat(buffer1, "\t{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
