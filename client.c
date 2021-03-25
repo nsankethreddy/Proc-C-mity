@@ -8,7 +8,7 @@
 
 #define PORT 5000
 
-#define DISCONNECT_MESSAGE "quit\n"
+#define DISCONNECT_MESSAGE "quit"
 char name[25];
 
 void *send_message(void *socket)
@@ -37,11 +37,11 @@ void *send_message(void *socket)
             ++length;
         }
         message[length] = '\0';
-        strcat(f_message, "[");
-        strcat(f_message, name);
-        strcat(f_message, "]");
-        strcat(f_message, ":");
-        strcat(f_message, " ");
+        //strcat(f_message, "[");
+        //strcat(f_message, name);
+        //strcat(f_message, "]");
+        //strcat(f_message, ":");
+        //strcat(f_message, " ");
         strcat(f_message, message);
         send(new_socket, f_message, strlen(f_message), 0);
     }
