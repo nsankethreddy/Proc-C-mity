@@ -24,7 +24,10 @@ void *send_message(void *socket)
         {
             exit(0);
         }
+        strcat(f_message, "[");
         strcat(f_message, name);
+        strcat(f_message, "]");
+        strcat(f_message, ":");
         strcat(f_message, " ");
         strcat(f_message, message);
         send(new_socket, f_message, strlen(f_message), 0);
@@ -56,17 +59,11 @@ void *rec_message(void *socket)
 int main(int argc, char const *argv[])
 {
     char pass[20];
-    char newname[25];
     strncpy(pass, argv[1], 20);
     int sock = 0, valread;
     struct sockaddr_in serv_addr;
     printf("Enter your username: ");
     scanf("%s", name);
-    strcat(newname,"[");
-    strcat(newname,name);
-    strcat(newname,"]");
-    strcat(newname,":");
-    strncpy(name,newname,25);
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
@@ -86,6 +83,7 @@ int main(int argc, char const *argv[])
         return -1;
     }
     printf("\n\t-------------{{CONNECTED to Server}}-------------\n\n");
+    send(sock, name, strlen(name), 0);
     pthread_t recieve_thread;
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;

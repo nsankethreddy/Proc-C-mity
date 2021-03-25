@@ -97,6 +97,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 {
     int new_socket;
     char buffer[1024] = {0};
+    char buffer1[1024] = {0};
     int i;
     while (1)
     {
@@ -105,7 +106,14 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         {
         }
         list[i] = new_socket;
-        // printf("New connection on new_socket: %d\n", new_socket);
+        memset(buffer, 0, 1024);
+        memset(buffer1, 0, 1024);
+        read(new_socket, buffer, 1024);
+        strcat(buffer1,"\t{{");
+        strcat(buffer1,buffer);
+        strcat(buffer1," Joined the Chat}}");
+        broadcast(new_socket, buffer1, 0);
+        printf("\t\t\t%s\n", buffer1);
         pthread_t recieve_thread;
         pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)new_socket);
         pthread_t send_thread;
