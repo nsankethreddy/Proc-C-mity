@@ -8,7 +8,7 @@
 
 #define PORT 5000
 
-#define DISCONNECT_MESSAGE "quit"
+#define DISCONNECT_MESSAGE "quit\n"
 char name[25];
 
 void *send_message(void *socket)

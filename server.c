@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 #define PORT 5000
-#define DISCONNECT_MESSAGE "quit"
+#define DISCONNECT_MESSAGE "quit\n"
 
 int list[100];
 
