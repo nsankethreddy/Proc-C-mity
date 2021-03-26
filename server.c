@@ -119,6 +119,16 @@ void *rec_message(void *socket)
                 strcat(buffer1, " DISCONNECTED}}-----\n");
                 broadcast(new_socket,buffer1,0); 
             }
+
+            if(i<n)
+                {
+                    for (int j=i; j<n; j++)
+                    {
+                        list[j] = list[j+1];
+                        strcpy(names[j],names[j+1]);
+                    }
+                    n = n-1;
+                }
         }
             
             close(new_socket);
