@@ -7,15 +7,15 @@
 #include <pthread.h>
 #include <signal.h>
 
-
 #define PORT 5000
 
 #define DISCONNECT_MESSAGE "quit\n"
 char name[25];
-void signal_callback_handler(int signum) {
-   printf("caught");
-   // Terminate program
-   exit(signum);
+void signal_callback_handler(int signum)
+{
+    printf("caught");
+    // Terminate program
+    exit(signum);
 }
 void *send_message(void *socket)
 {
@@ -30,7 +30,7 @@ void *send_message(void *socket)
         memset(message, 0, 1024);
         // scanf("%s", message);
         fgets(message, 1024, stdin);
-        
+
         if (!strcmp(message, DISCONNECT_MESSAGE))
         {
             exit(0);
@@ -44,11 +44,6 @@ void *send_message(void *socket)
             ++length;
         }
         message[length] = '\0';
-        //strcat(f_message, "[");
-        //strcat(f_message, name);
-        //strcat(f_message, "]");
-        //strcat(f_message, ":");
-        //strcat(f_message, " ");
         strcat(f_message, message);
         send(new_socket, f_message, strlen(f_message), 0);
     }
@@ -68,10 +63,10 @@ void *rec_message(void *socket)
             printf("\n\t-------------{{Server DISCONNECTED}}-------------\n\n");
             exit(0);
         }
-        if (strcmp(buffer, DISCONNECT_MESSAGE)==0)
+        if (strcmp(buffer, DISCONNECT_MESSAGE) == 0)
         {
-            
-	    exit(0);
+
+            exit(0);
         }
         printf("\t\t\t%s\n", buffer);
     }
@@ -107,20 +102,15 @@ int main(int argc, char const *argv[])
     }
     printf("\n\t-------------{{CONNECTED to Server}}-------------\n\n");
     send(sock, name, strlen(name), 0);
-    /*char recv[1024];
-    read(sock, recv, sizeof(recv));
-    
-    printf("%s\n",recv);*/
-    
-    
+
     pthread_t recieve_thread;
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;
     pthread_create(&send_thread, NULL, send_message, (void *)(intptr_t)sock);
     char recv[1024];
     read(sock, recv, sizeof(recv));
-    
-    printf("%s\n",recv);
+
+    printf("%s\n", recv);
     pthread_join(send_thread, NULL);
     pthread_join(recieve_thread, NULL);
     printf("Connection closed");
