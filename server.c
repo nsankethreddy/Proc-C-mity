@@ -113,14 +113,12 @@ void *rec_message(void *socket)
         {
             if (list[i] == new_socket)
             {
-                printf("\t-------------{{Client \" %s \" DISCONNECTED}}-------------\n",names[i]);
-                strcpy(buffer1,"\t-----{{Client ");
+                printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n",names[i]);
+                strcpy(buffer1,"\n\t-----{{Client \"");
                 strcat(buffer1,names[i]);
-                strcat(buffer1, " DISCONNECTED}}-----\n");
+                strcat(buffer1, "\" DISCONNECTED}}-----\n");
                 broadcast(new_socket,buffer1,0); 
-            }
-
-            if(i<n)
+                if(i<n)
                 {
                     for (int j=i; j<n; j++)
                     {
@@ -128,8 +126,12 @@ void *rec_message(void *socket)
                         strcpy(names[j],names[j+1]);
                     }
                     n = n-1;
-                }
+                    }
+            }
+            
+            
         }
+        
             
             close(new_socket);
             break;
@@ -144,7 +146,7 @@ void *rec_message(void *socket)
                 strcat(buffer1, "[");
                 strcat(buffer1, names[i]);
                 strcat(buffer1, "]");
-                strcat(buffer1, ":\t");
+                strcat(buffer1, ": ");
                 strcat(buffer1, buffer);
             }
         }
@@ -170,7 +172,8 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-
+	
+	
         for (int i = 0; i < 100; i++)
         {
             if (!strcmp(buffer, names[i]))
@@ -179,8 +182,9 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
                 strcat(buffer, gen(g, 4));
 
                 //send message to client
-                char s[] = "your username has been changed to ";
+                char s[] = "\t  Your username has been updated to ";
                 strcat(s, buffer);
+                //strcat(s,"}}---");
                 send(new_socket, s, 1024, 0);
             }
         }
@@ -190,7 +194,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
         broadcast(new_socket, buffer1, 0);
-        printf("\t\t\t%s\n", buffer1);
+        printf("\t\t%s\n", buffer1);
         pthread_t recieve_thread;
         pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)new_socket);
         pthread_t send_thread;
