@@ -6,26 +6,11 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <ctype.h>
 
 #define PORT 5000
-#define DISCONNECT_MESSAGE "quit\n"
+#define DISCONNECT_MESSAGE "quit"
 
 int list[100];
-char names[100][1024];
-
-char *gen(char *s, const int len)
-{
-    static const char alphanum[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-    for (int i = 0; i < len; ++i)
-    {
-        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-    }
-
-    s[len] = 0;
-    return s;
-}
 
 char **get_system_IPs()
 {
@@ -78,10 +63,11 @@ void *send_message(void *socket)
         memset(f_message, 0, 1024);
         memset(message, 0, 1024);
         fgets(message, 1024, stdin);
-        if (strcmp(message, DISCONNECT_MESSAGE) == 0)
+/*        if (!strcmp(message, DISCONNECT_MESSAGE))
         {
             exit(0);
-        }
+        }*/
+	
         if (!strcmp(message, "\n"))
         {
             continue;
@@ -100,48 +86,23 @@ void *rec_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
     char buffer[1024] = {0};
-    char buffer1[1024] = {0};
     int valread;
     while (1)
     {
-    	int n = sizeof(list) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
-	    for (int i = 0; i < n; i++)
+            printf("\t-------------{{Client DISCONNECTED}}-------------");
+            exit(0);
+        }
+        if (!strcmp(buffer, DISCONNECT_MESSAGE))
         {
-            if (list[i] == new_socket)
-            {
-                printf("\t-------------{{Client \" %s \" DISCONNECTED}}-------------\n",names[i]);
-                strcpy(buffer1,"\t-----{{Client ");
-                strcat(buffer1,names[i]);
-                strcat(buffer1, " DISCONNECTED}}-----\n");
-                broadcast(new_socket,buffer1,0); 
-            }
-        }
-            
-            close(new_socket);
-            break;
+            exit(0);
         }
 
-        //int n = sizeof(list) / sizeof(int);
-        char buffer1[1024] = {0};
-        for (int i = 0; i < n; i++)
-        {
-            if (list[i] == new_socket)
-            {
-                strcat(buffer1, "[");
-                strcat(buffer1, names[i]);
-                strcat(buffer1, "]");
-                strcat(buffer1, ":\t");
-                strcat(buffer1, buffer);
-            }
-        }
-
-        broadcast(new_socket, buffer1, 0);
-
-        printf("\t\t\t%s\n", buffer1);
+        broadcast(new_socket, buffer, 0);
+        printf("\t\t\t%s\n", buffer);
     }
 }
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
@@ -160,22 +121,6 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-
-        for (int i = 0; i < 100; i++)
-        {
-            if (!strcmp(buffer, names[i]))
-            {
-                char g[4];
-                strcat(buffer, gen(g, 4));
-
-                //send message to client
-                char s[] = "your username has been changed to ";
-                strcat(s, buffer);
-                send(new_socket, s, 1024, 0);
-            }
-        }
-
-        strcpy(names[i], buffer);
         strcat(buffer1, "\t{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
