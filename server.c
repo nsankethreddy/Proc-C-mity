@@ -22,7 +22,6 @@ char *gen(char *s, const int len)
     {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-
     s[len] = 0;
     return s;
 }
@@ -96,6 +95,7 @@ void *send_message(void *socket)
         broadcast(new_socket, f_message, 1);
     }
 }
+
 void *rec_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -104,40 +104,35 @@ void *rec_message(void *socket)
     int valread;
     while (1)
     {
-    	int n = sizeof(list) / sizeof(int);
+        int n = sizeof(list) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
-	    for (int i = 0; i < n; i++)
-        {
-            if (list[i] == new_socket)
+            for (int i = 0; i < n; i++)
             {
-                printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n",names[i]);
-                strcpy(buffer1,"\n\t-----{{Client \"");
-                strcat(buffer1,names[i]);
-                strcat(buffer1, "\" DISCONNECTED}}-----\n");
-                broadcast(new_socket,buffer1,0); 
-                if(i<n)
+                if (list[i] == new_socket)
                 {
-                    for (int j=i; j<n; j++)
+                    printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n", names[i]);
+                    strcpy(buffer1, "\n\t-----{{Client \"");
+                    strcat(buffer1, names[i]);
+                    strcat(buffer1, "\" DISCONNECTED}}-----\n");
+                    broadcast(new_socket, buffer1, 0);
+                    if (i < n)
                     {
-                        list[j] = list[j+1];
-                        strcpy(names[j],names[j+1]);
+                        for (int j = i; j < n; j++)
+                        {
+                            list[j] = list[j + 1];
+                            strcpy(names[j], names[j + 1]);
+                        }
+                        n = n - 1;
                     }
-                    n = n-1;
-                    }
+                }
             }
-            
-            
-        }
-        
-            
             close(new_socket);
             break;
         }
 
-        //int n = sizeof(list) / sizeof(int);
         char buffer1[1024] = {0};
         for (int i = 0; i < n; i++)
         {
@@ -152,10 +147,10 @@ void *rec_message(void *socket)
         }
 
         broadcast(new_socket, buffer1, 0);
-
         printf("\t\t\t%s\n", buffer1);
     }
 }
+
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 {
     int new_socket;
@@ -172,8 +167,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-	
-	
+
         for (int i = 0; i < 100; i++)
         {
             if (!strcmp(buffer, names[i]))
@@ -184,7 +178,6 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
                 //send message to client
                 char s[] = "\t  Your username has been updated to ";
                 strcat(s, buffer);
-                //strcat(s,"}}---");
                 send(new_socket, s, 1024, 0);
             }
         }
@@ -229,8 +222,6 @@ int main()
         ++length;
     }
     IP[length] = '\0';
-
-    // sockets
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {

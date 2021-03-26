@@ -11,12 +11,13 @@
 
 #define DISCONNECT_MESSAGE "quit\n"
 char name[25];
+
 void signal_callback_handler(int signum)
 {
     printf("caught");
-    // Terminate program
     exit(signum);
 }
+
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -28,7 +29,6 @@ void *send_message(void *socket)
         int length = 0;
         memset(f_message, 0, 1024);
         memset(message, 0, 1024);
-        // scanf("%s", message);
         fgets(message, 1024, stdin);
 
         if (!strcmp(message, DISCONNECT_MESSAGE))
@@ -48,6 +48,7 @@ void *send_message(void *socket)
         send(new_socket, f_message, strlen(f_message), 0);
     }
 }
+
 void *rec_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -65,7 +66,6 @@ void *rec_message(void *socket)
         }
         if (strcmp(buffer, DISCONNECT_MESSAGE) == 0)
         {
-
             exit(0);
         }
         printf("\t\t\t%s\n", buffer);
@@ -75,7 +75,6 @@ void *rec_message(void *socket)
 int main(int argc, char const *argv[])
 {
     signal(SIGINT, signal_callback_handler);
-
     char pass[20];
     strncpy(pass, argv[1], 20);
     int sock = 0, valread;
@@ -91,7 +90,7 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(PORT);
     if (inet_pton(AF_INET, pass, &serv_addr.sin_addr) <= 0)
     {
-        printf("\nInvalid address/ Address not supported \n");
+        printf("\nInvalid address / Address not supported \n");
         return -1;
     }
 
