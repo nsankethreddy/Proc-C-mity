@@ -12,7 +12,7 @@
 #define DISCONNECT_MESSAGE "quit\n"
 
 int list[100];
-char *names[100][1024];
+char names[100][1024];
 
 char *gen(char *s, const int len)
 {
@@ -103,17 +103,24 @@ void *rec_message(void *socket)
     int valread;
     while (1)
     {
+    	int n = sizeof(list) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
-
-            printf("\t-------------{{Client DISCONNECTED}}-------------\n");
+	    for (int i = 0; i < n; i++)
+        {
+            if (list[i] == new_socket)
+            {
+                printf("\t-------------{{Client %s DISCONNECTED}}-------------\n",names[i]);
+            }
+        }
+            
             close(new_socket);
             break;
         }
 
-        int n = sizeof(list) / sizeof(int);
+        //int n = sizeof(list) / sizeof(int);
         char buffer1[1024] = {0};
         for (int i = 0; i < n; i++)
         {
