@@ -21,8 +21,8 @@ void signal_callback_handler(int signum)
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
-    char message[1024];
-    char f_message[1024];
+    char message[1024] ={0};
+    char f_message[1024] = {0};
 
     while (1)
     {

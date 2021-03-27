@@ -26,7 +26,7 @@ char *gen(char *s, const int len)
     {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-    s[len] = 0;
+    s[len] = '\0';
     return s;
 }
 
@@ -73,8 +73,8 @@ void *broadcast(int new_socket, char *f_message, int server)
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
-    char message[1024];
-    char f_message[1024];
+    char message[1024] = {0};
+    char f_message[1024] ={0};
     while (1)
     {
         int length = 0;
@@ -180,14 +180,14 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
                 strcat(buffer, gen(g, 4));
 
                 //send message to client
-                char s[] = "\t  Your username has been updated to ";
+                char s[] = "\tYour username has been updated to ";
                 strcat(s, buffer);
                 send(new_socket, s, 1024, 0);
             }
         }
 
         strcpy(client.username[i], buffer);
-        strcat(buffer1, "\t{{");
+        strcat(buffer1, "{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
         broadcast(new_socket, buffer1, 0);
