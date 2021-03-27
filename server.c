@@ -11,8 +11,15 @@
 #define PORT 5000
 #define DISCONNECT_MESSAGE "quit\n"
 
-int list[100];
-char names[100][1024];
+//int list[100];
+//char names[100][1024];
+struct client_info{
+
+	int sock_id[100];
+	char username[100][1024];
+};
+
+struct client_info client;
 
 char *gen(char *s, const int len)
 {
@@ -49,18 +56,18 @@ void *broadcast(int new_socket, char *f_message, int server)
 {
     if (server)
     {
-        for (int i = 0; list[i] != '\0'; i++)
+        for (int i = 0; client.sock_id[i] != '\0'; i++)
         {
-            send(list[i], f_message, strlen(f_message), 0);
+            send(client.sock_id[i], f_message, strlen(f_message), 0);
         }
     }
     else
     {
-        for (int i = 0; list[i] != '\0'; i++)
+        for (int i = 0; client.sock_id[i] != '\0'; i++)
         {
-            if (list[i] != new_socket)
+            if (client.sock_id[i] != new_socket)
             {
-                send(list[i], f_message, strlen(f_message), 0);
+                send(client.sock_id[i], f_message, strlen(f_message), 0);
             }
         }
     }
@@ -104,26 +111,26 @@ void *rec_message(void *socket)
     int valread;
     while (1)
     {
-        int n = sizeof(list) / sizeof(int);
+        int n = sizeof(client.sock_id) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
             for (int i = 0; i < n; i++)
             {
-                if (list[i] == new_socket)
+                if (client.sock_id[i] == new_socket)
                 {
-                    printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n", names[i]);
+                    printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n", client.username[i]);
                     strcpy(buffer1, "\n\t-----{{Client \"");
-                    strcat(buffer1, names[i]);
+                    strcat(buffer1, client.username[i]);
                     strcat(buffer1, "\" DISCONNECTED}}-----\n");
                     broadcast(new_socket, buffer1, 0);
                     if (i < n)
                     {
                         for (int j = i; j < n; j++)
                         {
-                            list[j] = list[j + 1];
-                            strcpy(names[j], names[j + 1]);
+                            client.sock_id[j] = client.sock_id[j + 1];
+                            strcpy(client.username[j], client.username[j + 1]);
                         }
                         n = n - 1;
                     }
@@ -136,10 +143,10 @@ void *rec_message(void *socket)
         char buffer1[1024] = {0};
         for (int i = 0; i < n; i++)
         {
-            if (list[i] == new_socket)
+            if (client.sock_id[i] == new_socket)
             {
                 strcat(buffer1, "[");
-                strcat(buffer1, names[i]);
+                strcat(buffer1, client.username[i]);
                 strcat(buffer1, "]");
                 strcat(buffer1, ": ");
                 strcat(buffer1, buffer);
@@ -160,17 +167,17 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
     while (1)
     {
         new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
-        for (i = 0; list[i] != '\0'; i++)
+        for (i = 0; client.sock_id[i] != '\0'; i++)
         {
         }
-        list[i] = new_socket;
+        client.sock_id[i] = new_socket;
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
 
         for (int i = 0; i < 100; i++)
         {
-            if (!strcmp(buffer, names[i]))
+            if (!strcmp(buffer, client.username[i]))
             {
                 char g[4];
                 strcat(buffer, gen(g, 4));
@@ -182,7 +189,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
             }
         }
 
-        strcpy(names[i], buffer);
+        strcpy(client.username[i], buffer);
         strcat(buffer1, "\t{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
