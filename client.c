@@ -107,8 +107,8 @@ int main(int argc, char const *argv[])
     pthread_create(&recieve_thread, NULL, rec_message, (void *)(intptr_t)sock);
     pthread_t send_thread;
     pthread_create(&send_thread, NULL, send_message, (void *)(intptr_t)sock);
-    char recv[1024];
-    read(sock, recv, sizeof(recv));
+    char recv[1024] = {0};
+    read(sock, recv, 1024);
     printf("%s\n", recv);
     pthread_join(send_thread, NULL);
     pthread_join(recieve_thread, NULL);

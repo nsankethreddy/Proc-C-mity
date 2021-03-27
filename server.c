@@ -81,7 +81,7 @@ void *broadcast(int new_socket, char *f_message, int server)
 
 void *send_message(void *socket)
 {
-    signal(SIGSEGV, clean_exit_on_sig); // <-- this one is for segmentation fault
+    signal(SIGSEGV, clean_exit_on_sig);
     int new_socket = (intptr_t)socket;
     char message[1024];
     char f_message[1024];
@@ -120,6 +120,7 @@ void *rec_message(void *socket)
     {
         int n = sizeof(c1.list) / sizeof(int);
         memset(buffer, 0, 1024);
+        memset(buffer1, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
@@ -180,12 +181,11 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         }
         c1.list[i] = new_socket;
         memset(buffer, 0, 1024);
-        memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
 
-        for (int i = 0; i < 100; i++)
+        for (int p = 0; p < 100; p++)
         {
-            if (!strcmp(buffer, c1.names[i]))
+            if (!strcmp(buffer, c1.names[p]))
             {
                 char g[4];
                 strcat(buffer, gen(g, 4));
@@ -197,9 +197,10 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
             }
         }
 
+        memset(buffer1, 0, 1024);
         strcpy(c1.names[i], buffer);
         strcat(buffer1, "\n\t{{");
-        strcat(buffer1, buffer);
+        strcat(buffer1, c1.names[i]);
         strcat(buffer1, " Joined the Chat}}");
         broadcast(new_socket, buffer1, 0);
         printf("\t\t%s\n", buffer1);
