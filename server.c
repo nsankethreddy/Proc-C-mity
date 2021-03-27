@@ -11,10 +11,7 @@
 #define PORT 5000
 #define DISCONNECT_MESSAGE "quit\n"
 
-//int list[100];
-//char names[100][1024];
 struct client_info{
-
 	int sock_id[100];
 	char username[100][1024];
 };
