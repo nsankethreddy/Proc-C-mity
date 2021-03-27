@@ -7,14 +7,23 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <ctype.h>
+#include <signal.h>
 
 #define PORT 5000
 #define DISCONNECT_MESSAGE "quit\n"
 
-struct client{
-int list[100];
-char names[100][1024];
+void clean_exit_on_sig(int sig_num)
+{
+    printf("\n Signal %d received because of input buffer overflow\n", sig_num);
+    exit(1);
+}
+
+struct client
+{
+    int list[100];
+    char names[100][1024];
 };
+
 struct client c1;
 
 char *gen(char *s, const int len)
@@ -72,6 +81,7 @@ void *broadcast(int new_socket, char *f_message, int server)
 
 void *send_message(void *socket)
 {
+    signal(SIGSEGV, clean_exit_on_sig); // <-- this one is for segmentation fault
     int new_socket = (intptr_t)socket;
     char message[1024];
     char f_message[1024];
@@ -99,6 +109,7 @@ void *send_message(void *socket)
         broadcast(new_socket, f_message, 1);
     }
 }
+
 void *rec_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -107,40 +118,35 @@ void *rec_message(void *socket)
     int valread;
     while (1)
     {
-    	int n = sizeof(c1.list) / sizeof(int);
+        int n = sizeof(c1.list) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
-	    for (int i = 0; i < n; i++)
-        {
-            if (c1.list[i] == new_socket)
+            for (int i = 0; i < n; i++)
             {
-                printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n",c1.names[i]);
-                strcpy(buffer1,"\n\t-----{{Client \"");
-                strcat(buffer1,c1.names[i]);
-                strcat(buffer1, "\" DISCONNECTED}}-----\n");
-                broadcast(new_socket,buffer1,0); 
-                if(i<n)
+                if (c1.list[i] == new_socket)
                 {
-                    for (int j=i; j<n; j++)
+                    printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n", c1.names[i]);
+                    strcpy(buffer1, "\n\t-----{{Client \"");
+                    strcat(buffer1, c1.names[i]);
+                    strcat(buffer1, "\" DISCONNECTED}}-----\n");
+                    broadcast(new_socket, buffer1, 0);
+                    if (i < n)
                     {
-                        c1.list[j] = c1.list[j+1];
-                        strcpy(c1.names[j],c1.names[j+1]);
+                        for (int j = i; j < n; j++)
+                        {
+                            c1.list[j] = c1.list[j + 1];
+                            strcpy(c1.names[j], c1.names[j + 1]);
+                        }
+                        n = n - 1;
                     }
-                    n = n-1;
-                    }
+                }
             }
-            
-            
-        }
-        
-            
+
             close(new_socket);
             break;
         }
-
-        //int n = sizeof(list) / sizeof(int);
         char buffer1[1024] = {0};
         for (int i = 0; i < n; i++)
         {
@@ -159,6 +165,7 @@ void *rec_message(void *socket)
         printf("\t\t\t%s\n", buffer1);
     }
 }
+
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 {
     int new_socket;
@@ -175,8 +182,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-	
-	
+
         for (int i = 0; i < 100; i++)
         {
             if (!strcmp(buffer, c1.names[i]))
@@ -187,7 +193,6 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
                 //send message to client
                 char s[] = "\t  Your username has been updated to ";
                 strcat(s, buffer);
-                //strcat(s,"}}---");
                 send(new_socket, s, 1024, 0);
             }
         }
@@ -207,6 +212,7 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 
 int main()
 {
+    signal(SIGSEGV, clean_exit_on_sig);
     int n, server_fd, valread;
     int opt = 1;
     struct sockaddr_in address;
@@ -234,7 +240,6 @@ int main()
     IP[length] = '\0';
 
     // sockets
-
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("socket failed");
@@ -264,4 +269,3 @@ int main()
     accept_conn(server_fd, address, addrlen);
     return 0;
 }
-

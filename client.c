@@ -8,20 +8,21 @@
 #include <signal.h>
 
 #define PORT 5000
-
 #define DISCONNECT_MESSAGE "quit\n"
+
 char name[25];
 
-void signal_callback_handler(int signum)
+void clean_exit_on_sig(int sig_num)
 {
-    printf("caught");
-    exit(signum);
+    printf("\n Signal %d received because of input buffer overflow\n", sig_num);
+    exit(1);
 }
 
 void *send_message(void *socket)
 {
+    signal(SIGSEGV, clean_exit_on_sig);
     int new_socket = (intptr_t)socket;
-    char message[1024] ={0};
+    char message[1024] = {0};
     char f_message[1024] = {0};
 
     while (1)
@@ -74,7 +75,7 @@ void *rec_message(void *socket)
 
 int main(int argc, char const *argv[])
 {
-    signal(SIGINT, signal_callback_handler);
+    signal(SIGSEGV, clean_exit_on_sig);
     char pass[20];
     strncpy(pass, argv[1], 20);
     int sock = 0, valread;
@@ -108,7 +109,6 @@ int main(int argc, char const *argv[])
     pthread_create(&send_thread, NULL, send_message, (void *)(intptr_t)sock);
     char recv[1024];
     read(sock, recv, sizeof(recv));
-
     printf("%s\n", recv);
     pthread_join(send_thread, NULL);
     pthread_join(recieve_thread, NULL);
