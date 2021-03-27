@@ -11,12 +11,11 @@
 #define PORT 5000
 #define DISCONNECT_MESSAGE "quit\n"
 
-struct client_info{
-	int sock_id[100];
-	char username[100][1024];
+struct client{
+int list[100];
+char names[100][1024];
 };
-
-struct client_info client;
+struct client c1;
 
 char *gen(char *s, const int len)
 {
@@ -26,7 +25,8 @@ char *gen(char *s, const int len)
     {
         s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-    s[len] = '\0';
+
+    s[len] = 0;
     return s;
 }
 
@@ -53,18 +53,18 @@ void *broadcast(int new_socket, char *f_message, int server)
 {
     if (server)
     {
-        for (int i = 0; client.sock_id[i] != '\0'; i++)
+        for (int i = 0; c1.list[i] != '\0'; i++)
         {
-            send(client.sock_id[i], f_message, strlen(f_message), 0);
+            send(c1.list[i], f_message, strlen(f_message), 0);
         }
     }
     else
     {
-        for (int i = 0; client.sock_id[i] != '\0'; i++)
+        for (int i = 0; c1.list[i] != '\0'; i++)
         {
-            if (client.sock_id[i] != new_socket)
+            if (c1.list[i] != new_socket)
             {
-                send(client.sock_id[i], f_message, strlen(f_message), 0);
+                send(c1.list[i], f_message, strlen(f_message), 0);
             }
         }
     }
@@ -73,8 +73,8 @@ void *broadcast(int new_socket, char *f_message, int server)
 void *send_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
-    char message[1024] = {0};
-    char f_message[1024] ={0};
+    char message[1024];
+    char f_message[1024];
     while (1)
     {
         int length = 0;
@@ -99,7 +99,6 @@ void *send_message(void *socket)
         broadcast(new_socket, f_message, 1);
     }
 }
-
 void *rec_message(void *socket)
 {
     int new_socket = (intptr_t)socket;
@@ -108,42 +107,47 @@ void *rec_message(void *socket)
     int valread;
     while (1)
     {
-        int n = sizeof(client.sock_id) / sizeof(int);
+    	int n = sizeof(c1.list) / sizeof(int);
         memset(buffer, 0, 1024);
         valread = read(new_socket, buffer, 1024);
         if (valread == 0)
         {
-            for (int i = 0; i < n; i++)
+	    for (int i = 0; i < n; i++)
+        {
+            if (c1.list[i] == new_socket)
             {
-                if (client.sock_id[i] == new_socket)
+                printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n",c1.names[i]);
+                strcpy(buffer1,"\n\t-----{{Client \"");
+                strcat(buffer1,c1.names[i]);
+                strcat(buffer1, "\" DISCONNECTED}}-----\n");
+                broadcast(new_socket,buffer1,0); 
+                if(i<n)
                 {
-                    printf("\t-------------{{Client \"%s\" DISCONNECTED}}-------------\n", client.username[i]);
-                    strcpy(buffer1, "\n\t-----{{Client \"");
-                    strcat(buffer1, client.username[i]);
-                    strcat(buffer1, "\" DISCONNECTED}}-----\n");
-                    broadcast(new_socket, buffer1, 0);
-                    if (i < n)
+                    for (int j=i; j<n; j++)
                     {
-                        for (int j = i; j < n; j++)
-                        {
-                            client.sock_id[j] = client.sock_id[j + 1];
-                            strcpy(client.username[j], client.username[j + 1]);
-                        }
-                        n = n - 1;
+                        c1.list[j] = c1.list[j+1];
+                        strcpy(c1.names[j],c1.names[j+1]);
                     }
-                }
+                    n = n-1;
+                    }
             }
+            
+            
+        }
+        
+            
             close(new_socket);
             break;
         }
 
+        //int n = sizeof(list) / sizeof(int);
         char buffer1[1024] = {0};
         for (int i = 0; i < n; i++)
         {
-            if (client.sock_id[i] == new_socket)
+            if (c1.list[i] == new_socket)
             {
                 strcat(buffer1, "[");
-                strcat(buffer1, client.username[i]);
+                strcat(buffer1, c1.names[i]);
                 strcat(buffer1, "]");
                 strcat(buffer1, ": ");
                 strcat(buffer1, buffer);
@@ -151,10 +155,10 @@ void *rec_message(void *socket)
         }
 
         broadcast(new_socket, buffer1, 0);
+
         printf("\t\t\t%s\n", buffer1);
     }
 }
-
 void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
 {
     int new_socket;
@@ -164,30 +168,32 @@ void *accept_conn(int server_fd, struct sockaddr_in address, int addrlen)
     while (1)
     {
         new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
-        for (i = 0; client.sock_id[i] != '\0'; i++)
+        for (i = 0; c1.list[i] != '\0'; i++)
         {
         }
-        client.sock_id[i] = new_socket;
+        c1.list[i] = new_socket;
         memset(buffer, 0, 1024);
         memset(buffer1, 0, 1024);
         read(new_socket, buffer, 1024);
-
+	
+	
         for (int i = 0; i < 100; i++)
         {
-            if (!strcmp(buffer, client.username[i]))
+            if (!strcmp(buffer, c1.names[i]))
             {
                 char g[4];
                 strcat(buffer, gen(g, 4));
 
                 //send message to client
-                char s[] = "\tYour username has been updated to ";
+                char s[] = "\t  Your username has been updated to ";
                 strcat(s, buffer);
+                //strcat(s,"}}---");
                 send(new_socket, s, 1024, 0);
             }
         }
 
-        strcpy(client.username[i], buffer);
-        strcat(buffer1, "{{");
+        strcpy(c1.names[i], buffer);
+        strcat(buffer1, "\n\t{{");
         strcat(buffer1, buffer);
         strcat(buffer1, " Joined the Chat}}");
         broadcast(new_socket, buffer1, 0);
@@ -227,6 +233,8 @@ int main()
     }
     IP[length] = '\0';
 
+    // sockets
+
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("socket failed");
@@ -256,3 +264,4 @@ int main()
     accept_conn(server_fd, address, addrlen);
     return 0;
 }
+
