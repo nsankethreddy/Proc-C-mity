@@ -7,7 +7,7 @@ A chatroom made using C lang and websockets
 -   
     ``` git clone https://github.com/nsankethreddy/Proc-C-mity.git ```
 
-- To compile the code for server and client
+- To compile the code for server and client  
     ``` chmod +x compile.sh ```
     ``` ./compile.sh ```
 
